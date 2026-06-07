@@ -1,0 +1,3 @@
+[submodule "submodules/app-code"]
+	path = submodules/app-code
+	url = https://github.com/timmartinez3befan-spec/mini-code-submodule.git
