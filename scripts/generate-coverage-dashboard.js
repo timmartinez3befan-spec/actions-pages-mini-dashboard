@@ -1,4 +1,49 @@
+const fs = require("fs");
+const path = require("path");
 
+const summaryPath = process.argv[2];
+
+if (!summaryPath) {
+  console.error("Bitte Pfad zur coverage-summary.json angeben.");
+  process.exit(1);
+}
+
+if (!fs.existsSync(summaryPath)) {
+  console.error("coverage-summary.json nicht gefunden:", summaryPath);
+  process.exit(1);
+}
+
+const outputDir = path.join(process.cwd(), "dist");
+const rawSummary = JSON.parse(fs.readFileSync(summaryPath, "utf8"));
+
+const total = rawSummary.total;
+
+const files = Object.entries(rawSummary)
+  .filter(([filePath]) => filePath !== "total")
+  .map(([filePath, metrics]) => ({
+    file: filePath.replaceAll("\\", "/"),
+    lines: metrics.lines.pct,
+    statements: metrics.statements.pct,
+    functions: metrics.functions.pct,
+    branches: metrics.branches.pct,
+  }));
+
+const dashboardData = {
+  generatedAt: new Date().toISOString(),
+  branch: process.env.GITHUB_REF_NAME || "lokal",
+  commit: process.env.GITHUB_SHA || "lokal",
+  runNumber: process.env.GITHUB_RUN_NUMBER || "lokal",
+  submodulePath: "submodules/app-code",
+  total: {
+    lines: total.lines.pct,
+    statements: total.statements.pct,
+    functions: total.functions.pct,
+    branches: total.branches.pct,
+  },
+  files,
+};
+
+const html = `
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -181,3 +226,18 @@
   </script>
 </body>
 </html>
+`;
+
+fs.mkdirSync(outputDir, { recursive: true });
+
+fs.writeFileSync(
+  path.join(outputDir, "data.json"),
+  JSON.stringify(dashboardData, null, 2),
+  "utf8"
+);
+
+fs.writeFileSync(path.join(outputDir, "index.html"), html, "utf8");
+
+console.log("Coverage Dashboard erzeugt:");
+console.log("- dist/index.html");
+console.log("- dist/data.json");

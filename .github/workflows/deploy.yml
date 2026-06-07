@@ -1,13 +1,10 @@
-name: Build and Deploy Dashboard
+name: Build Submodule Coverage Dashboard
 
 on:
   push:
     branches: ["main"]
 
   workflow_dispatch:
-
-  schedule:
-    - cron: "0 6 * * *"
 
 permissions:
   contents: read
@@ -23,11 +20,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - name: Checkout main repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Generate dashboard
-        run: node scripts/generate-report.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies in submodule
+        working-directory: submodules/app-code
+        run: npm ci
+
+      - name: Run coverage in submodule
+        working-directory: submodules/app-code
+        run: npm run coverage
+
+      - name: Generate dashboard in main repository
+        run: node scripts/generate-coverage-dashboard.js submodules/app-code/coverage/coverage-summary.json
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

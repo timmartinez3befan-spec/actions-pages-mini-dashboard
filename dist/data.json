@@ -1,26 +1,22 @@
 {
-  "generatedAt": "2026-06-07T21:25:48.282Z",
+  "generatedAt": "2026-06-07T22:25:33.770Z",
   "branch": "lokal",
   "commit": "lokal",
   "runNumber": "lokal",
-  "totalFiles": 3,
-  "fileTypes": [
-    {
-      "type": ".yml",
-      "count": 1
-    },
-    {
-      "type": ".md",
-      "count": 1
-    },
-    {
-      "type": ".js",
-      "count": 1
-    }
-  ],
+  "submodulePath": "submodules/app-code",
+  "total": {
+    "lines": 85.71,
+    "statements": 85.71,
+    "functions": 100,
+    "branches": 50
+  },
   "files": [
-    ".github/workflows/deploy.yml",
-    "README.md",
-    "scripts/generate-report.js"
+    {
+      "file": "C:/Users/Täme/Desktop/actions-pages-mini-dashboard/submodules/app-code/src/calculator.js",
+      "lines": 85.71,
+      "statements": 85.71,
+      "functions": 100,
+      "branches": 50
+    }
   ]
 }
