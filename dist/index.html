@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini GitHub Actions Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .metric {
+      background: #f0f0f0;
+      padding: 16px;
+      border-radius: 10px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td, th {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mini GitHub Actions Dashboard</h1>
+    <p>Diese Seite wurde automatisch durch GitHub Actions generiert und über GitHub Pages veröffentlicht.</p>
+  </div>
+
+  <div class="card grid">
+    <div class="metric">
+      Dateien im Repo
+      <strong>3</strong>
+    </div>
+
+    <div class="metric">
+      Branch
+      <strong>lokal</strong>
+    </div>
+
+    <div class="metric">
+      Workflow Run
+      <strong>lokal</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Build-Informationen</h2>
+    <p><strong>Commit:</strong> <code>lokal</code></p>
+    <p><strong>Generiert am:</strong> 7.6.2026, 23:11:26</p>
+  </div>
+
+  <div class="card">
+    <h2>Dateitypen</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Dateityp</th>
+          <th>Anzahl</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+      <tr>
+        <td>.yml</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>.md</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>.js</td>
+        <td>1</td>
+      </tr>
+    
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
