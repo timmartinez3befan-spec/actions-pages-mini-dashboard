@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini GitHub Actions Dashboard</title>
+  <title>Mini Dashboard mit JSON</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 40px auto;
       padding: 0 20px;
       background: #f5f5f5;
@@ -21,10 +21,6 @@
       border-radius: 12px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      margin-bottom: 8px;
     }
 
     .grid {
@@ -60,36 +56,42 @@
       background: #eee;
       padding: 2px 6px;
       border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .small {
+      color: #666;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Mini GitHub Actions Dashboard</h1>
-    <p>Diese Seite wurde automatisch durch GitHub Actions generiert und über GitHub Pages veröffentlicht.</p>
+    <h1>Mini Dashboard mit JSON-Daten</h1>
+    <p>Diese Website liest automatisch eine <code>data.json</code>, die durch GitHub Actions erzeugt wurde.</p>
   </div>
 
   <div class="card grid">
     <div class="metric">
       Dateien im Repo
-      <strong>3</strong>
+      <strong id="totalFiles">-</strong>
     </div>
 
     <div class="metric">
       Branch
-      <strong>lokal</strong>
+      <strong id="branch">-</strong>
     </div>
 
     <div class="metric">
       Workflow Run
-      <strong>lokal</strong>
+      <strong id="runNumber">-</strong>
     </div>
   </div>
 
   <div class="card">
     <h2>Build-Informationen</h2>
-    <p><strong>Commit:</strong> <code>lokal</code></p>
-    <p><strong>Generiert am:</strong> 7.6.2026, 23:11:26</p>
+    <p><strong>Commit:</strong> <code id="commit">-</code></p>
+    <p><strong>Generiert am:</strong> <span id="generatedAt">-</span></p>
   </div>
 
   <div class="card">
@@ -101,25 +103,55 @@
           <th>Anzahl</th>
         </tr>
       </thead>
-      <tbody>
-        
-      <tr>
-        <td>.yml</td>
-        <td>1</td>
-      </tr>
-    
-      <tr>
-        <td>.md</td>
-        <td>1</td>
-      </tr>
-    
-      <tr>
-        <td>.js</td>
-        <td>1</td>
-      </tr>
-    
-      </tbody>
+      <tbody id="fileTypeTable"></tbody>
     </table>
   </div>
+
+  <div class="card">
+    <h2>Gefundene Dateien</h2>
+    <p class="small">Die ersten 20 Dateien im Repository.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Datei</th>
+        </tr>
+      </thead>
+      <tbody id="fileTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadDashboard() {
+      const response = await fetch("./data.json");
+      const data = await response.json();
+
+      document.getElementById("totalFiles").textContent = data.totalFiles;
+      document.getElementById("branch").textContent = data.branch;
+      document.getElementById("runNumber").textContent = data.runNumber;
+      document.getElementById("commit").textContent = data.commit;
+      document.getElementById("generatedAt").textContent =
+        new Date(data.generatedAt).toLocaleString("de-DE");
+
+      const fileTypeTable = document.getElementById("fileTypeTable");
+      fileTypeTable.innerHTML = "";
+
+      data.fileTypes.forEach((item) => {
+        const row = document.createElement("tr");
+        row.innerHTML = "<td>" + item.type + "</td><td>" + item.count + "</td>";
+        fileTypeTable.appendChild(row);
+      });
+
+      const fileTable = document.getElementById("fileTable");
+      fileTable.innerHTML = "";
+
+      data.files.slice(0, 20).forEach((file) => {
+        const row = document.createElement("tr");
+        row.innerHTML = "<td><code>" + file + "</code></td>";
+        fileTable.appendChild(row);
+      });
+    }
+
+    loadDashboard();
+  </script>
 </body>
 </html>

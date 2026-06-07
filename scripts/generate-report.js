@@ -26,14 +26,6 @@ function walkDirectory(dir) {
   return results;
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
 const files = walkDirectory(rootDir).map((file) =>
   path.relative(rootDir, file).replaceAll("\\", "/")
 );
@@ -45,17 +37,17 @@ for (const file of files) {
   fileTypes[ext] = (fileTypes[ext] || 0) + 1;
 }
 
-const fileTypeRows = Object.entries(fileTypes)
-  .sort((a, b) => b[1] - a[1])
-  .map(
-    ([type, count]) => `
-      <tr>
-        <td>${escapeHtml(type)}</td>
-        <td>${count}</td>
-      </tr>
-    `
-  )
-  .join("");
+const reportData = {
+  generatedAt: new Date().toISOString(),
+  branch: process.env.GITHUB_REF_NAME || "lokal",
+  commit: process.env.GITHUB_SHA || "lokal",
+  runNumber: process.env.GITHUB_RUN_NUMBER || "lokal",
+  totalFiles: files.length,
+  fileTypes: Object.entries(fileTypes)
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count),
+  files,
+};
 
 const html = `
 <!DOCTYPE html>
@@ -63,11 +55,11 @@ const html = `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini GitHub Actions Dashboard</title>
+  <title>Mini Dashboard mit JSON</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 40px auto;
       padding: 0 20px;
       background: #f5f5f5;
@@ -80,10 +72,6 @@ const html = `
       border-radius: 12px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      margin-bottom: 8px;
     }
 
     .grid {
@@ -119,36 +107,42 @@ const html = `
       background: #eee;
       padding: 2px 6px;
       border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .small {
+      color: #666;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Mini GitHub Actions Dashboard</h1>
-    <p>Diese Seite wurde automatisch durch GitHub Actions generiert und über GitHub Pages veröffentlicht.</p>
+    <h1>Mini Dashboard mit JSON-Daten</h1>
+    <p>Diese Website liest automatisch eine <code>data.json</code>, die durch GitHub Actions erzeugt wurde.</p>
   </div>
 
   <div class="card grid">
     <div class="metric">
       Dateien im Repo
-      <strong>${files.length}</strong>
+      <strong id="totalFiles">-</strong>
     </div>
 
     <div class="metric">
       Branch
-      <strong>${escapeHtml(process.env.GITHUB_REF_NAME || "lokal")}</strong>
+      <strong id="branch">-</strong>
     </div>
 
     <div class="metric">
       Workflow Run
-      <strong>${escapeHtml(process.env.GITHUB_RUN_NUMBER || "lokal")}</strong>
+      <strong id="runNumber">-</strong>
     </div>
   </div>
 
   <div class="card">
     <h2>Build-Informationen</h2>
-    <p><strong>Commit:</strong> <code>${escapeHtml(process.env.GITHUB_SHA || "lokal")}</code></p>
-    <p><strong>Generiert am:</strong> ${new Date().toLocaleString("de-DE")}</p>
+    <p><strong>Commit:</strong> <code id="commit">-</code></p>
+    <p><strong>Generiert am:</strong> <span id="generatedAt">-</span></p>
   </div>
 
   <div class="card">
@@ -160,16 +154,70 @@ const html = `
           <th>Anzahl</th>
         </tr>
       </thead>
-      <tbody>
-        ${fileTypeRows}
-      </tbody>
+      <tbody id="fileTypeTable"></tbody>
     </table>
   </div>
+
+  <div class="card">
+    <h2>Gefundene Dateien</h2>
+    <p class="small">Die ersten 20 Dateien im Repository.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Datei</th>
+        </tr>
+      </thead>
+      <tbody id="fileTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadDashboard() {
+      const response = await fetch("./data.json");
+      const data = await response.json();
+
+      document.getElementById("totalFiles").textContent = data.totalFiles;
+      document.getElementById("branch").textContent = data.branch;
+      document.getElementById("runNumber").textContent = data.runNumber;
+      document.getElementById("commit").textContent = data.commit;
+      document.getElementById("generatedAt").textContent =
+        new Date(data.generatedAt).toLocaleString("de-DE");
+
+      const fileTypeTable = document.getElementById("fileTypeTable");
+      fileTypeTable.innerHTML = "";
+
+      data.fileTypes.forEach((item) => {
+        const row = document.createElement("tr");
+        row.innerHTML = "<td>" + item.type + "</td><td>" + item.count + "</td>";
+        fileTypeTable.appendChild(row);
+      });
+
+      const fileTable = document.getElementById("fileTable");
+      fileTable.innerHTML = "";
+
+      data.files.slice(0, 20).forEach((file) => {
+        const row = document.createElement("tr");
+        row.innerHTML = "<td><code>" + file + "</code></td>";
+        fileTable.appendChild(row);
+      });
+    }
+
+    loadDashboard();
+  </script>
 </body>
 </html>
 `;
 
 fs.mkdirSync(outputDir, { recursive: true });
+
+fs.writeFileSync(
+  path.join(outputDir, "data.json"),
+  JSON.stringify(reportData, null, 2),
+  "utf8"
+);
+
 fs.writeFileSync(path.join(outputDir, "index.html"), html, "utf8");
 
-console.log("Dashboard wurde erfolgreich generiert: dist/index.html");
+console.log("Dashboard wurde erfolgreich generiert:");
+console.log("- dist/index.html");
+console.log("- dist/data.json");
